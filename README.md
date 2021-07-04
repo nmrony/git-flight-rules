@@ -11,7 +11,7 @@ A guide for astronauts (now, programmers using Git) about what to do when things
 
 > NASA has been capturing our missteps, disasters and solutions since the early 1960s, when Mercury-era ground teams first started gathering "lessons learned" into a compendium that now lists thousands of problematic situations, from engine failure to busted hatch handles to computer glitches, and their solutions.
 
-&mdash; Chris Hadfield, *An Astronaut's Guide to Life*.
+&mdash; Chris Hadfield, *An Astronaut's Guide to Life on Earth*.
 
 #### Conventions for this document
 
@@ -83,6 +83,7 @@ All commands should work for at least git version 2.13.0. See the [git website](
     - [I want to set a remote branch as the upstream for a local branch](#i-want-to-set-a-remote-branch-as-the-upstream-for-a-local-branch)
     - [I want to set my HEAD to track the default remote branch](#i-want-to-set-my-head-to-track-the-default-remote-branch)
     - [I made changes on the wrong branch](#i-made-changes-on-the-wrong-branch)
+    - [I want to split a branch into two](#i-want-to-split-a-branch-into-two)
   - [Rebasing and Merging](#rebasing-and-merging)
     - [I want to undo rebase/merge](#i-want-to-undo-rebasemerge)
     - [I rebased, but I don't want to force push](#i-rebased-but-i-dont-want-to-force-push)
@@ -456,6 +457,7 @@ echo sensitive_file >> .gitignore
 Alternatively store your sensitive data in local environment variables.
 
 If you want to completely remove an entire file (and not keep it locally), then run
+
 ```sh
 (feature-branch)$ git rm sensitive_file
 (feature-branch)$ git commit --amend --no-edit
@@ -480,14 +482,17 @@ There are two options for rewriting history, the built-in `git-filter-branch` or
 Using bfg-repo-cleaner requires java. Download the bfg jar from the link [here](https://rtyley.github.io/bfg-repo-cleaner/). Our examples will use `bfg.jar`, but your download may have a version number, e.g. `bfg-1.13.0.jar`.
 
 To delete a specific file.
+
 ```sh
 (main)$ git rm path/to/filetoremove
 (main)$ git commit -m "Commit removing filetoremove"
 (main)$ java -jar ~/Downloads/bfg.jar --delete-files filetoremove
 ```
+
 Note that in bfg you must use the plain file name even if it is in a subdirectory.
 
 You can also delete a file by pattern, e.g.:
+
 ```sh
 (main)$ git rm *.jpg
 (main)$ git commit -m "Commit removing *.jpg"
@@ -608,7 +613,6 @@ If you already know you don't want to change the commit message, you can tell gi
 ```sh
 (my-branch*)$ git commit --amend -C HEAD
 ```
-
 
 <a name="commit-partial-new-file"></a>
 ### I want to stage part of a new file, but not the whole file
@@ -990,6 +994,7 @@ And finally, let's cherry-pick the commit for bug #14:
 
 <a name="delete-stale-local-branches"></a>
 ### I want to delete local branches that were deleted upstream
+
 Once you merge a pull request on GitHub, it gives you the option to delete the merged branch in your fork. If you aren't planning to keep working on the branch, it's cleaner to delete the local copies of the branch so you don't end up cluttering up your working checkout with a lot of stale branches.
 
 ```sh
@@ -1115,11 +1120,12 @@ To rename a different (local) branch:
 ```sh
 (main)$ git branch -m old-name new-name
 ```
- To delete the `old-name` remote branch and push the `new-name` local branch:
 
- ```sh
- (main)$ git push origin :old_name new_name
- ```
+To delete the `old-name` remote branch and push the `new-name` local branch:
+
+```sh
+(main)$ git push origin :old_name new_name
+```
 
 <a name="i-want-to-checkout-to-a-remote-branch-that-someone-else-is-working-on"></a>
 ### I want to checkout to a remote branch that someone else is working on
@@ -1205,6 +1211,21 @@ You've made uncommitted changes and realise you're on the wrong branch. Stash ch
 (wrong_branch)$ git checkout <correct_branch>
 (correct_branch)$ git stash apply
 ```
+
+<a name="i-want-to-split-a-branch-into-two"></a>
+### I want to split a branch into two
+
+You've made a lot of commits on a branch and now want to separate it into two, ending with a branch up to an earlier commit and another with all the changes.
+
+Use `git log` to find the commit where you want to split. Then do the following:
+
+```sh
+(original_branch)$ git checkout -b new_branch
+(new_branch)$ git checkout original_branch
+(original_branch)$ git reset --hard <sha1 split here>
+```
+
+If you had previously pushed the `original_branch` to remote, you will need to do a force push. For more information check [Stack Overlflow](https://stackoverflow.com/questions/28983458/how-to-split-a-branch-in-two-with-git/28983843#28983843)
 
 ## Rebasing and Merging
 
@@ -1876,6 +1897,7 @@ $ git config --global credential.helper cache
 $ git config --global credential.helper 'cache --timeout=3600'
 # Set the cache to timeout after 1 hour (setting is in seconds)
 ```
+
 To find a credential helper:
 
 ```sh
